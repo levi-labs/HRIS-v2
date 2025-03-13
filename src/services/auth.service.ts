@@ -49,7 +49,7 @@ export class AuthService{
     static async login(req:UserLoginRequest):Promise<UserLoginResponse>{
         const secret=process.env.ACCESS_TOKEN_SECRET;
         const validated:UserLoginRequest = Validation.validate(userLoginSchema,req);
-        const user = await prisma.user.findFirst({
+        const user = await prisma.user.findUnique({
             where: {
                 username: validated.username
             },
@@ -77,8 +77,9 @@ export class AuthService{
        const token = generateAccessToken({
         id: user.id,
         username: user.username,
-        role: user.role.name
+        role: user.role
        });
+      
        if(!secret){
            throw new ResponseError(500,"Token secret not found");
        }

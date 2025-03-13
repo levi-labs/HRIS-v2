@@ -1,11 +1,7 @@
 import {Request,Response,NextFunction} from "express";
 import { AuthUser } from "../types/auth.type.js";
 import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
 import { ResponseError } from "../error/response.errors.js";
-
-dotenv.config();
-
 export interface AuthRequest extends Request{
     cookies:{
         refreshToken:string
@@ -13,21 +9,23 @@ export interface AuthRequest extends Request{
     user?:AuthUser
 }
 export class AuthMiddleware {
-    static async checkAuth(req:AuthRequest,res:Response,next:NextFunction):Promise<void>{ 
+    static checkAuth(req:AuthRequest,res:Response,next:NextFunction):void{
         try {
             const authHeader = req.headers.authorization;
-
             if (!authHeader || !authHeader.startsWith("Bearer ")) {
                 throw new ResponseError(401, "Unauthorized: Token is missing or invalid");
             }
+            
             const token = authHeader.split(" ")[1];
-           
+            if(!token){
+                throw new ResponseError(401,"Unauthorized: Token is missing or invalid");
+            }
             const decoded = jwt.verify(token,process.env.ACCESS_TOKEN_SECRET || '') as jwt.JwtPayload;
             
-            if(!decoded?.id || !decoded?.username || !decoded?.role?.id || !decoded?.role?.name || !decoded?.expiresIn){
-                throw new ResponseError(401,"Unauthorized: Invalid token payload");
+            if(!decoded){
+                throw new ResponseError(401,"Unauthorized: Token is missing or invalid");
             }
-            
+
             req.user = {
                 id: decoded.id,
                 username: decoded.username,

@@ -5,7 +5,7 @@ export const errorMiddleware = async (err:Error,req:Request,res:Response,next:Ne
     if(err instanceof ZodError){
         const errorsMessage = err.errors.map((error) => {
             return {
-                message: error.message,
+                message:error.message,
                 errors :error.path.join("."),
             }
         })
