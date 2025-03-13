@@ -58,7 +58,7 @@ export class RoleService{
 
     static async update(id:number,req:RoleRequest):Promise<RoleResponse>{
         const validated = Validation.validate<RoleRequest>(roleSchema,req);
-
+        
         const existingRole = await prisma.role.findUnique({
             where: {
                 id

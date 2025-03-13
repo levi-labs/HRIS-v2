@@ -16,10 +16,12 @@ export const errorMiddleware = async (err:Error,req:Request,res:Response,next:Ne
         });
     }else if(err instanceof ResponseError){
         res.status(err.status).json({
+            success: false,
             message: err.message
         });
     }else{
         res.status(500).json({
+            success: false,
             message: err.message
         });
     }
