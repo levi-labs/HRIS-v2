@@ -46,10 +46,26 @@ model Department {
   @@map("departments")
 }
 
+enum JobLevel {
+  INTERN
+  ENTRY_LEVEL
+  JUNIOR
+  MID_LEVEL
+  SENIOR
+  LEAD
+  SUPERVISOR
+  MANAGER
+  SENIOR_MANAGER
+  DIRECTOR
+  VICE_PRESIDENT
+  C_LEVEL
+  FOUNDER
+}
+
 model JobPosition {
   id            Int         @id @default(autoincrement())
   name          String      @db.VarChar(80)
-  level         String      @db.VarChar(20)
+  level         JobLevel
   salary_min    Decimal     @db.Decimal(18, 2)
   salary_max    Decimal     @db.Decimal(18, 2)
   department_id Int?        @db.Int
