@@ -1,5 +1,12 @@
 import { RoleResponse } from "./role.type.js";
 
+export type AuthUser = {
+    id: number;
+    username: string;
+    role: RoleResponse;
+    token: string;
+    expiresIn: string
+}
 export type UserRegisterRequest = {
     username: string;
     email: string;
