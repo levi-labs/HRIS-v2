@@ -1,0 +1,170 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Role {
+  id    Int    @id @default(autoincrement())
+  name  String @unique @db.VarChar(60)
+  users User[]
+
+  @@map("roles")
+}
+
+model User {
+  id            Int            @id @default(autoincrement())
+  username      String         @unique @db.VarChar(40)
+  email         String         @unique @db.VarChar(60)
+  password      String         @db.VarChar(255)
+  roleId        Int            @db.Int
+  role          Role           @relation(fields: [roleId], references: [id])
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  employees     Employee[]
+  leaveRequests LeaveRequest[]
+
+  @@map("users")
+}
+
+model Department {
+  id           Int           @id @default(autoincrement())
+  name         String        @db.VarChar(80)
+  phone        String        @db.VarChar(25)
+  address      String        @db.VarChar(150)
+  jobPositions JobPosition[]
+
+  @@map("departments")
+}
+
+model JobPosition {
+  id            Int         @id @default(autoincrement())
+  name          String      @db.VarChar(80)
+  level         String      @db.VarChar(20)
+  salary_min    Decimal     @db.Decimal(18, 2)
+  salary_max    Decimal     @db.Decimal(18, 2)
+  department_id Int?        @db.Int
+  department    Department? @relation(fields: [department_id], references: [id])
+  employees     Employee[]
+
+  @@map("job_positions")
+}
+
+model Employee {
+  id              Int            @id @default(autoincrement())
+  first_name      String         @db.VarChar(60)
+  last_name       String         @db.VarChar(60)
+  userId          Int
+  user            User           @relation(fields: [userId], references: [id])
+  job_position_id Int
+  job_position    JobPosition    @relation(fields: [job_position_id], references: [id])
+  Attendance      Attendance[]
+  office_id       Int
+  Office          Office         @relation(fields: [office_id], references: [id])
+  leaveRequests   LeaveRequest[]
+  payrolls        Payroll[]
+  documents       Document[]
+
+  @@map("employees")
+}
+
+model Attendance {
+  id           Int           @id @default(autoincrement())
+  employeeId   Int
+  employee     Employee      @relation(fields: [employeeId], references: [id])
+  date         DateTime      @db.Date
+  checkIn      DateTime      @db.Timestamp()
+  checkOut     DateTime?     @db.Timestamp()
+  status       String        @db.VarChar(15)
+  geolocations Geolocation[]
+
+  @@map("attendances")
+}
+
+model Office {
+  id        Int     @id @default(autoincrement())
+  name      String  @db.VarChar(60)
+  latitude  Decimal @db.Decimal(18, 8)
+  longitude Decimal @db.Decimal(11, 8)
+
+  employees       Employee[]
+  officeSchedules OfficeSchedule[]
+
+  @@map("offices")
+}
+
+model OfficeSchedule {
+  id          Int     @id @default(autoincrement())
+  officeId    Int
+  office      Office  @relation(fields: [officeId], references: [id])
+  day         String  @db.VarChar(10) // Senin, Selasa, Rabu, dll.
+  work_start  String  @db.VarChar(10)
+  work_end    String  @db.VarChar(10)
+  break_start String? @db.VarChar(10)
+  break_end   String? @db.VarChar(10)
+
+  late_tolerance  Int @default(15) // Toleransi keterlambatan dalam menit
+  early_tolerance Int @default(10) // Batas lebih awal pulang
+
+  @@map("office_schedules")
+}
+
+model Geolocation {
+  id                Int        @id @default(autoincrement())
+  checkInLatitude   Decimal    @db.Decimal(18, 8)
+  checkInLongitude  Decimal    @db.Decimal(11, 8)
+  checkOutLatitude  Decimal?   @db.Decimal(18, 8)
+  checkOutLongitude Decimal?   @db.Decimal(11, 8)
+  attendance_id     Int
+  attendance        Attendance @relation(fields: [attendance_id], references: [id])
+
+  @@map("geolocations")
+}
+
+model LeaveRequest {
+  id         Int      @id @default(autoincrement())
+  employeeId Int
+  employee   Employee @relation(fields: [employeeId], references: [id])
+  startDate  DateTime @db.Date
+  endDate    DateTime @db.Date
+  reason     String   @db.VarChar(120)
+  status     String   @db.VarChar(15)
+  approvedBy Int?
+  approver   User?    @relation(fields: [approvedBy], references: [id])
+
+  @@map("leave_requests")
+}
+
+model Payroll {
+  id         Int      @id @default(autoincrement())
+  employeeId Int
+  employee   Employee @relation(fields: [employeeId], references: [id])
+  salary     Decimal  @db.Decimal(18, 2)
+  bonus      Decimal  @db.Decimal(18, 2)
+  deduction  Decimal  @db.Decimal(18, 2)
+  netSalary  Decimal  @db.Decimal(18, 2)
+  payDate    DateTime @db.Date
+  status     String   @db.VarChar(20)
+
+  @@map("payrolls")
+}
+
+model Document {
+  id         Int      @id @default(autoincrement())
+  employeeId Int
+  employee   Employee @relation(fields: [employeeId], references: [id])
+  title      String   @db.VarChar(120)
+  filePath   String   @db.Text
+  uploadedAt DateTime @default(now())
+
+  @@map("documents")
+}
