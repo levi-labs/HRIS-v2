@@ -5,11 +5,12 @@ export const errorMiddleware = async (err:Error,req:Request,res:Response,next:Ne
     if(err instanceof ZodError){
         const errorsMessage = err.errors.map((error) => {
             return {
-                field:error.path.join("."),
                 message: error.message,
+                errors :error.path.join("."),
             }
         })
         res.status(422).json({
+            success: false,
             message: "Validation Error",
             errors: errorsMessage
         });

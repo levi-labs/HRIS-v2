@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { AuthService } from "../services/auth.service.js";
-import { info, log } from "console";
+
 export class AuthController {
     static async register(req:Request,res:Response,next:NextFunction):Promise<void>{
         try {
@@ -8,7 +8,8 @@ export class AuthController {
             res.status(201).json({
                 success: true,
                 message: "User created successfully",
-                data
+                data,
+                meta: res.locals.meta
             });
         } catch (error) {
             next(error);
