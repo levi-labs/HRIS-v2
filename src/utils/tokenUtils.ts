@@ -4,7 +4,6 @@ const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET || '';
 const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET || '';
 
 const generateAccessToken = (payload: object): string => {
-    console.info('ACCESS_TOKEN_SECRET', ACCESS_TOKEN_SECRET);
     return jwt.sign(payload, ACCESS_TOKEN_SECRET, {expiresIn: '1h'});
 }
 

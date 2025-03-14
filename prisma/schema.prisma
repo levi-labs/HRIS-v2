@@ -22,28 +22,41 @@ model Role {
 }
 
 model User {
-  id            Int            @id @default(autoincrement())
-  username      String         @unique @db.VarChar(40)
-  email         String         @unique @db.VarChar(60)
-  password      String         @db.VarChar(255)
-  roleId        Int            @db.Int
-  role          Role           @relation(fields: [roleId], references: [id])
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  id            Int             @id @default(autoincrement())
+  username      String          @unique @db.VarChar(40)
+  email         String          @unique @db.VarChar(60)
+  password      String          @db.VarChar(255)
+  roleId        Int             @db.Int
+  role          Role            @relation(fields: [roleId], references: [id])
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
   employees     Employee[]
   leaveRequests LeaveRequest[]
+  salaryHistory SalaryHistory[]
 
   @@map("users")
 }
 
 model Department {
-  id           Int           @id @default(autoincrement())
-  name         String        @db.VarChar(80)
-  phone        String        @db.VarChar(25)
-  address      String        @db.VarChar(150)
+  id           Int                @id @default(autoincrement())
+  name         String             @db.VarChar(80)
+  phone        String             @db.VarChar(25)
   jobPositions JobPosition[]
+  offices      DepartmentOffice[]
 
   @@map("departments")
+}
+
+model DepartmentOffice {
+  id           Int        @id @default(autoincrement())
+  departmentId Int
+  officeId     Int
+  startDate    DateTime   @default(now()) // Kapan departemen mulai ada di kantor ini
+  endDate      DateTime? // Null jika masih aktif
+  department   Department @relation(fields: [departmentId], references: [id])
+  office       Office     @relation(fields: [officeId], references: [id])
+
+  @@map("department_offices")
 }
 
 enum JobLevel {
@@ -76,31 +89,59 @@ model JobPosition {
 }
 
 model Employee {
-  id              Int            @id @default(autoincrement())
-  first_name      String         @db.VarChar(60)
-  last_name       String         @db.VarChar(60)
+  id              Int         @id @default(autoincrement())
+  first_name      String      @db.VarChar(60)
+  last_name       String      @db.VarChar(60)
   userId          Int
-  user            User           @relation(fields: [userId], references: [id])
+  user            User        @relation(fields: [userId], references: [id])
   job_position_id Int
-  job_position    JobPosition    @relation(fields: [job_position_id], references: [id])
-  Attendance      Attendance[]
-  office_id       Int
-  Office          Office         @relation(fields: [office_id], references: [id])
-  leaveRequests   LeaveRequest[]
-  payrolls        Payroll[]
-  documents       Document[]
+  job_position    JobPosition @relation(fields: [job_position_id], references: [id])
+
+  attendance    Attendance[]
+  offices       EmployeeOffice[]
+  leaveRequests LeaveRequest[]
+  payrolls      Payroll[]
+  documents     Document[]
+  salaryHistory SalaryHistory[]
 
   @@map("employees")
 }
 
+model EmployeeOffice {
+  id         Int       @id @default(autoincrement())
+  employeeId Int
+  officeId   Int
+  startDate  DateTime  @default(now()) // Kapan mulai di kantor ini
+  endDate    DateTime? // Null jika masih aktif
+  employee   Employee  @relation(fields: [employeeId], references: [id])
+  office     Office    @relation(fields: [officeId], references: [id])
+
+  @@map("employee_offices")
+}
+
+model SalaryHistory {
+  id          Int      @id @default(autoincrement())
+  employeeId  Int
+  employee    Employee @relation(fields: [employeeId], references: [id])
+  oldSalary   Decimal  @db.Decimal(18, 2)
+  newSalary   Decimal  @db.Decimal(18, 2)
+  effectiveAt DateTime @db.Date
+  updatedBy   Int
+  updater     User     @relation(fields: [updatedBy], references: [id])
+
+  @@map("salary_histories")
+}
+
 model Attendance {
-  id           Int           @id @default(autoincrement())
+  id           Int              @id @default(autoincrement())
   employeeId   Int
-  employee     Employee      @relation(fields: [employeeId], references: [id])
-  date         DateTime      @db.Date
-  checkIn      DateTime      @db.Timestamp()
-  checkOut     DateTime?     @db.Timestamp()
-  status       String        @db.VarChar(15)
+  employee     Employee         @relation(fields: [employeeId], references: [id])
+  date         DateTime         @db.Date
+  checkIn      DateTime         @db.Timestamp()
+  checkOut     DateTime?        @db.Timestamp()
+  status       AttendanceStatus @default(PRESENT)
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
   geolocations Geolocation[]
 
   @@map("attendances")
@@ -112,8 +153,9 @@ model Office {
   latitude  Decimal @db.Decimal(18, 8)
   longitude Decimal @db.Decimal(11, 8)
 
-  employees       Employee[]
-  officeSchedules OfficeSchedule[]
+  employees        EmployeeOffice[]
+  officeSchedules  OfficeSchedule[]
+  departmentOffice DepartmentOffice[]
 
   @@map("offices")
 }
@@ -147,29 +189,29 @@ model Geolocation {
 }
 
 model LeaveRequest {
-  id         Int      @id @default(autoincrement())
+  id         Int         @id @default(autoincrement())
   employeeId Int
-  employee   Employee @relation(fields: [employeeId], references: [id])
-  startDate  DateTime @db.Date
-  endDate    DateTime @db.Date
-  reason     String   @db.VarChar(120)
-  status     String   @db.VarChar(15)
+  employee   Employee    @relation(fields: [employeeId], references: [id])
+  startDate  DateTime    @db.Date
+  endDate    DateTime    @db.Date
+  reason     String      @db.VarChar(120)
+  status     LeaveStatus @default(PENDING)
   approvedBy Int?
-  approver   User?    @relation(fields: [approvedBy], references: [id])
+  approver   User?       @relation(fields: [approvedBy], references: [id])
 
   @@map("leave_requests")
 }
 
 model Payroll {
-  id         Int      @id @default(autoincrement())
+  id         Int           @id @default(autoincrement())
   employeeId Int
-  employee   Employee @relation(fields: [employeeId], references: [id])
-  salary     Decimal  @db.Decimal(18, 2)
-  bonus      Decimal  @db.Decimal(18, 2)
-  deduction  Decimal  @db.Decimal(18, 2)
-  netSalary  Decimal  @db.Decimal(18, 2)
-  payDate    DateTime @db.Date
-  status     String   @db.VarChar(20)
+  employee   Employee      @relation(fields: [employeeId], references: [id])
+  salary     Decimal       @db.Decimal(18, 2)
+  bonus      Decimal       @db.Decimal(18, 2)
+  deduction  Decimal       @db.Decimal(18, 2)
+  netSalary  Decimal       @db.Decimal(18, 2)
+  payDate    DateTime      @db.Date
+  status     PayrollStatus @default(PENDING)
 
   @@map("payrolls")
 }
@@ -183,4 +225,24 @@ model Document {
   uploadedAt DateTime @default(now())
 
   @@map("documents")
+}
+
+enum AttendanceStatus {
+  PRESENT
+  LATE
+  ABSENT
+  SICK
+  LEAVE
+}
+
+enum LeaveStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum PayrollStatus {
+  PENDING
+  PAID
+  FAILED
 }
