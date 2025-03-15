@@ -10,7 +10,7 @@ export class DepartmentService {
                 id: true,
                 name: true,
                 phone: true,
-                address: true
+               
             }
         });
         return departments;
@@ -25,7 +25,6 @@ export class DepartmentService {
                 id: true,
                 name: true,
                 phone: true,
-                address: true
             }
         });
         if(!department){
@@ -49,13 +48,11 @@ export class DepartmentService {
             data: {
                 name: validated.name,
                 phone: validated.phone,
-                address: validated.address
             },
             select: {
                 id: true,
                 name: true,
                 phone: true,
-                address: true
             }
         });
         return department;
@@ -89,13 +86,11 @@ export class DepartmentService {
             data: {
                 name: validated.name,
                 phone: validated.phone,
-                address: validated.address
             },
             select: {
                 id: true,
                 name: true,
                 phone: true,
-                address: true
             }
         });
         return updatedDepartment;
