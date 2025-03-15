@@ -6,6 +6,7 @@ import jobPositionRouter from "./jobPosition.routes.js";
 import userRouter from "./user.routes.js";
 import officeRouter from "./office.routes.js";
 import officeScheduleRouter from "./officeSchedule.routes.js";
+import employeeRouter from "./employee.routes.js";
 
 const router = Router();
 
@@ -16,6 +17,7 @@ router.use("/job-position",jobPositionRouter);
 router.use('/user',userRouter);
 router.use("/office",officeRouter);
 router.use("/office-schedule",officeScheduleRouter);
+router.use("/employee",employeeRouter);
 
 
 export default router;
