@@ -1,3 +1,4 @@
+import { Office, OfficeSchedule } from "@prisma/client";
 
 export type OfficeRequest = {
     name: string;
@@ -10,3 +11,4 @@ export type OfficeResponse = {
     latitude: string;
     longitude: string;
 }
+
