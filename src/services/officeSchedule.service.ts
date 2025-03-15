@@ -1,6 +1,8 @@
 import { OfficeSchedule } from "@prisma/client";
 import prisma from "../config/prisma.js";
 import { ResponseError } from "../error/response.errors.js";
+import { OfficeScheduleRequest, officeScheduleSchema } from "../validations/officeSchedule.validation.js";
+import { Validation } from "../validations/validation.js";
 
 export class OfficeScheduleService {
     static async getAll():Promise<OfficeSchedule[]> {
@@ -20,10 +22,11 @@ export class OfficeScheduleService {
         return result;
     }
 
-    static async create(data:OfficeSchedule):Promise<OfficeSchedule> {
+    static async create(data:OfficeScheduleRequest):Promise<OfficeSchedule> {
+        const validated = Validation.validate<OfficeScheduleRequest>(officeScheduleSchema,data);
         const office = await prisma.office.findFirst({
             where: {
-                id: data.officeId,
+                id: validated.office_id,
             }
         });
         if(!office){
@@ -31,8 +34,8 @@ export class OfficeScheduleService {
         }
         const officeSchedule = await prisma.officeSchedule.findFirst({
             where: {
-                officeId: data.officeId,
-                day: data.day
+                officeId: validated.office_id,
+                day: validated.day
             }
         });
 
@@ -41,16 +44,26 @@ export class OfficeScheduleService {
         }
 
         const result = await prisma.officeSchedule.create({
-            data
+            data :{
+                officeId: validated.office_id,
+                day: validated.day,
+                work_start: validated.work_start,
+                work_end: validated.work_end,
+                break_start: validated.break_start || null,
+                break_end: validated.break_end || null,
+                late_tolerance: validated.late_tolerance,
+                early_tolerance: validated.early_tolerance
+            }
         });
 
         return result;
     }
 
-    static async update(id:number,data:OfficeSchedule):Promise<OfficeSchedule> {
+    static async update(id:number,data:OfficeScheduleRequest):Promise<OfficeSchedule> {
+        const validated = Validation.validate<OfficeScheduleRequest>(officeScheduleSchema,data);
         const office = await prisma.office.findFirst({
             where: {
-                id: data.officeId,
+                id: validated.office_id,
             }
         });
         if(!office){
@@ -58,8 +71,8 @@ export class OfficeScheduleService {
         }
         const officeSchedule = await prisma.officeSchedule.findFirst({
             where: {
-                officeId: data.officeId,
-                day: data.day
+                officeId: validated.office_id,
+                day: validated.day
             }
         });
 
@@ -71,7 +84,16 @@ export class OfficeScheduleService {
             where: {
                 id
             },
-            data
+            data: {
+                officeId: validated.office_id,
+                day: validated.day,
+                work_start: validated.work_start,
+                work_end: validated.work_end,
+                break_start: validated.break_start || null,
+                break_end: validated.break_end || null,
+                late_tolerance: validated.late_tolerance,
+                early_tolerance: validated.early_tolerance
+            }
         });
 
         return result;
