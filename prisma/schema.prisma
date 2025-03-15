@@ -30,7 +30,7 @@ model User {
   role          Role            @relation(fields: [roleId], references: [id])
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
-  employees     Employee[]
+  employees     Employee?
   leaveRequests LeaveRequest[]
   salaryHistory SalaryHistory[]
 
@@ -92,19 +92,38 @@ model Employee {
   id              Int         @id @default(autoincrement())
   first_name      String      @db.VarChar(60)
   last_name       String      @db.VarChar(60)
-  userId          Int
+  userId          Int         @unique
   user            User        @relation(fields: [userId], references: [id])
   job_position_id Int
   job_position    JobPosition @relation(fields: [job_position_id], references: [id])
 
-  attendance    Attendance[]
-  offices       EmployeeOffice[]
-  leaveRequests LeaveRequest[]
-  payrolls      Payroll[]
-  documents     Document[]
-  salaryHistory SalaryHistory[]
+  attendance           Attendance[]
+  offices              EmployeeOffice[]
+  leaveRequests        LeaveRequest[]
+  payrolls             Payroll[]
+  documents            Document[]
+  salaryHistory        SalaryHistory[]
+  employeeWorkSchedule EmployeeWorkSchedule[]
 
   @@map("employees")
+}
+
+model EmployeeWorkSchedule {
+  id           Int      @id @default(autoincrement())
+  employeeId   Int
+  scheduleDate DateTime // Tanggal jadwal kerja
+  workType     WorkType // Enum: WFH, WFO
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  employee Employee @relation(fields: [employeeId], references: [id])
+
+  @@map("employee_work_schedules")
+}
+
+enum WorkType {
+  WFO // Work from Office
+  WFH // Work from Home
 }
 
 model EmployeeOffice {
@@ -113,6 +132,7 @@ model EmployeeOffice {
   officeId   Int
   startDate  DateTime  @default(now()) // Kapan mulai di kantor ini
   endDate    DateTime? // Null jika masih aktif
+  isActive   Boolean   @default(true)
   employee   Employee  @relation(fields: [employeeId], references: [id])
   office     Office    @relation(fields: [officeId], references: [id])
 
@@ -194,6 +214,7 @@ model LeaveRequest {
   employee   Employee    @relation(fields: [employeeId], references: [id])
   startDate  DateTime    @db.Date
   endDate    DateTime    @db.Date
+  leaveType  LeaveType
   reason     String      @db.VarChar(120)
   status     LeaveStatus @default(PENDING)
   approvedBy Int?
@@ -233,6 +254,19 @@ enum AttendanceStatus {
   ABSENT
   SICK
   LEAVE
+}
+
+enum LeaveType {
+  ANNUAL // Cuti tahunan
+  SICK // Cuti sakit
+  MATERNITY // Cuti melahirkan
+  PATERNITY // Cuti ayah
+  UNPAID // Cuti tanpa gaji
+  PERSONAL // Cuti pribadi
+  BEREAVEMENT // Cuti duka
+  MARRIAGE // Cuti pernikahan
+  STUDY // Cuti belajar
+  RELIGIOUS // Cuti keagamaan
 }
 
 enum LeaveStatus {
