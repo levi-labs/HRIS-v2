@@ -22,17 +22,18 @@ model Role {
 }
 
 model User {
-  id            Int             @id @default(autoincrement())
-  username      String          @unique @db.VarChar(40)
-  email         String          @unique @db.VarChar(60)
-  password      String          @db.VarChar(255)
-  roleId        Int             @db.Int
-  role          Role            @relation(fields: [roleId], references: [id])
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
-  employees     Employee?
-  leaveRequests LeaveRequest[]
-  salaryHistory SalaryHistory[]
+  id              Int               @id @default(autoincrement())
+  username        String            @unique @db.VarChar(40)
+  email           String            @unique @db.VarChar(60)
+  password        String            @db.VarChar(255)
+  roleId          Int               @db.Int
+  role            Role              @relation(fields: [roleId], references: [id])
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  employees       Employee?
+  leaveRequests   LeaveRequest[]
+  salaryHistory   SalaryHistory[]
+  transferRequest TransferRequest[]
 
   @@map("users")
 }
@@ -104,25 +105,33 @@ model Employee {
   documents            Document[]
   salaryHistory        SalaryHistory[]
   employeeWorkSchedule EmployeeWorkSchedule[]
+  TransferRequest      TransferRequest[]
 
   @@map("employees")
 }
 
 model EmployeeWorkSchedule {
-  id           Int      @id @default(autoincrement())
+  id           Int                @id @default(autoincrement())
   employeeId   Int
   scheduleDate DateTime // Tanggal jadwal kerja
-  workType     WorkType // Enum: WFH, WFO
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  workType     WorkType // Enum: SHIFT CHANGE, WFO
+  status       WorkScheduleStatus
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
 
   employee Employee @relation(fields: [employeeId], references: [id])
 
   @@map("employee_work_schedules")
 }
 
+enum WorkScheduleStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 enum WorkType {
-  WFO // Work from Office
+  SHIFT_CHANGE // Perubahan shift atau lokasi kantor sementara
   WFH // Work from Home
 }
 
@@ -223,6 +232,18 @@ model LeaveRequest {
   @@map("leave_requests")
 }
 
+model TransferRequest {
+  id          Int                   @id @default(autoincrement())
+  employeeId  Int
+  fromOffice  Int
+  toOffice    Int
+  status      TransferRequestStatus // Pending, Approved, Rejected
+  requestDate DateTime              @default(now())
+  approvedBy  Int? // HR/Admin yang menyetujui
+  employee    Employee              @relation(fields: [employeeId], references: [id])
+  approver    User?                 @relation(fields: [approvedBy], references: [id])
+}
+
 model Payroll {
   id         Int           @id @default(autoincrement())
   employeeId Int
@@ -246,6 +267,12 @@ model Document {
   uploadedAt DateTime @default(now())
 
   @@map("documents")
+}
+
+enum TransferRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
 
 enum AttendanceStatus {
