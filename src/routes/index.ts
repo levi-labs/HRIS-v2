@@ -8,6 +8,7 @@ import officeRouter from "./office.routes.js";
 import officeScheduleRouter from "./officeSchedule.routes.js";
 import employeeRouter from "./employee.routes.js";
 import employeeScheduleRouter from "./employeeSchedule.routes.js";
+import employeeOfficeRouter from "./employeeOffice.routes.js";
 
 const router = Router();
 
@@ -20,6 +21,7 @@ router.use("/office",officeRouter);
 router.use("/office-schedule",officeScheduleRouter);
 router.use("/employee",employeeRouter);
 router.use("/employee-schedule",employeeScheduleRouter);
+router.use("/employee-office",employeeOfficeRouter);
 
 
 export default router;
