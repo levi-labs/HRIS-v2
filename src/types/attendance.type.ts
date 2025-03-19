@@ -10,7 +10,6 @@ export type AttendanceResponse = {
 
 export type AttendanceRequest = {
     employeeId: number;
-    date: string;
     latitude: string;
     longitude: string;
 };

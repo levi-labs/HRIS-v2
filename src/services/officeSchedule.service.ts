@@ -1,8 +1,9 @@
 import { OfficeSchedule } from "@prisma/client";
 import prisma from "../config/prisma.js";
 import { ResponseError } from "../error/response.errors.js";
-import { OfficeScheduleRequest, officeScheduleSchema } from "../validations/officeSchedule.validation.js";
+import { officeScheduleSchema } from "../validations/officeSchedule.validation.js";
 import { Validation } from "../validations/validation.js";
+import { OfficeScheduleRequest } from "../types/officeSchedule.type.js";
 
 export class OfficeScheduleService {
     static async getAll():Promise<OfficeSchedule[]> {

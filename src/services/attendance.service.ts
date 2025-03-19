@@ -7,6 +7,8 @@ import { ResponseError } from "../error/response.errors.js";
 import { haversineFormula } from "../utils/haversine.js";
 import {Decimal} from "decimal.js";
 import { GeolocationService } from "./geolocation.service.js";
+import e from "express";
+import { getDayName } from "../utils/getDays.js";
 
 export class AttendanceService {
     static async getAll():Promise<Attendance[]> {
@@ -34,7 +36,7 @@ export class AttendanceService {
         const attendanceExists = await prisma.attendance.findFirst({
             where: {
                 employeeId: validate.employeeId,
-                date: new Date(validate.date)
+                date: new Date()
             }
         });
 
@@ -47,6 +49,9 @@ export class AttendanceService {
                 where: {
                     employeeId: validate.employeeId,
                     isActive: true
+                },
+                include: {
+                    office: true
                 }
             });
 
@@ -57,7 +62,7 @@ export class AttendanceService {
             const scheduleIsWfh = await tx.employeeWorkSchedule.findFirst({
                 where: {
                     employeeId: validate.employeeId,
-                    scheduleDate: new Date(validate.date),
+                    scheduleDate: new Date(),
                     workType: "WFH",
                     status: "APPROVED"
                 }
@@ -67,7 +72,7 @@ export class AttendanceService {
                 const attendance = await tx.attendance.create({
                     data: {
                         employeeId: validate.employeeId,
-                        date: new Date(validate.date),
+                        date: new Date(),
                         checkIn: new Date(),
                     }
                 });
@@ -82,23 +87,10 @@ export class AttendanceService {
 
                 return attendance;
             }
-
-            // if (!scheduleIsWfh) {
-            //     throw new ResponseError(400,"You are not working from home today");
-            // }
-
            
-            const office = await tx.office.findUnique({
-                where: {
-                    id: employeeOffice.officeId
-                }
-            });
-
-            if (!office) {
-                throw new ResponseError(500,"Failed to find office");
-            }
-            const officeLatitude = Number(office.latitude);
-            const officeLongitude = Number(office.longitude);
+            
+            const officeLatitude = Number(employeeOffice.office.latitude);
+            const officeLongitude = Number(employeeOffice.office.longitude);
 
 
             const checkRadius = haversineFormula(officeLatitude, officeLongitude,latitude, longitude) * 1000;
@@ -106,19 +98,43 @@ export class AttendanceService {
             if (checkRadius > toleranceRadius) {
                 throw new ResponseError(400,"You are too far from the office");
             }
+            // const today = new Intl.DateTimeFormat("id-ID", { weekday: "long" }).format(new Date());
 
+          
+
+            const officeSchedule = await tx.officeSchedule.findFirst({
+                where: {
+                    officeId: employeeOffice.office.id,
+                    day: getDayName(new Date())
+                }
+            });
+
+            
+            if (!officeSchedule) {
+                throw new ResponseError(500,"Failed to find office schedule");
+            }
+
+            const checkInTimeUTC = new Date();
+            const checkInTimeWIB = new Date(checkInTimeUTC.getTime() + 7 * 60 * 60 * 1000); //konversi UTC ke WIB
+            const workStartInUTC = new Date(officeSchedule.work_start);
+            const workStartInWIB = new Date(workStartInUTC.getTime() + 7 * 60 * 60 * 1000); //konversi UTC ke WIB
+
+            const status_late = checkInTimeWIB > new Date(workStartInWIB.getTime() + officeSchedule.late_tolerance * 60000)
+            console.log("officeLatitude",officeSchedule);
+            
+            console.log("status late",status_late);
+            
+          
             const attendance = await tx.attendance.create({
                 data: {
                     employeeId: validate.employeeId,
                     date: new Date(),
                     checkIn: new Date(),
+                    status : status_late ? "LATE" : "PRESENT"
                 },
                
             });
             
-            if (!attendance) {
-                throw new ResponseError(500,"Failed to create attendance");
-            }
             console.info("radius",checkRadius,toleranceRadius);
             await GeolocationService.checkIn(tx,{
                 attendanceId: attendance.id,
@@ -126,16 +142,10 @@ export class AttendanceService {
                 longitude: longitude.toString()
               
             });
-            // await tx.geolocation.create({
-            //     data: {
-            //         attendanceId: attendance.id,
-            //         checkInLatitude: new Decimal(latitude),
-            //         checkInLongitude: new Decimal(longitude)
-            //     }
-            // });
 
             return {
                 ...attendance,
+                date:attendance.date.toISOString().split("T")[0],
                 latitude: latitude.toString(),
                 longitude: longitude.toString()
             };

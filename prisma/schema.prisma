@@ -190,14 +190,14 @@ model Office {
 }
 
 model OfficeSchedule {
-  id          Int     @id @default(autoincrement())
+  id          Int                @id @default(autoincrement())
   officeId    Int
-  office      Office  @relation(fields: [officeId], references: [id])
-  day         String  @db.VarChar(10) // Senin, Selasa, Rabu, dll.
-  work_start  String  @db.VarChar(10)
-  work_end    String  @db.VarChar(10)
-  break_start String? @db.VarChar(10)
-  break_end   String? @db.VarChar(10)
+  office      Office             @relation(fields: [officeId], references: [id])
+  day         OfficeScheduleDays
+  work_start  DateTime           @db.DateTime()
+  work_end    DateTime           @db.DateTime()
+  break_start String?            @db.VarChar(10)
+  break_end   String?            @db.VarChar(10)
 
   late_tolerance  Int @default(15) // Toleransi keterlambatan dalam menit
   early_tolerance Int @default(10) // Batas lebih awal pulang
@@ -267,6 +267,16 @@ model Document {
   uploadedAt DateTime @default(now())
 
   @@map("documents")
+}
+
+enum OfficeScheduleDays {
+  SENIN
+  SELASA
+  RABU
+  KAMIS
+  JUMAT
+  SABTU
+  MINGGU
 }
 
 enum TransferRequestStatus {
