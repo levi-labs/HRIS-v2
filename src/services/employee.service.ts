@@ -26,7 +26,11 @@ export class EmployeeService {
     static async createWithUser(data:EmployeeRequest):Promise<EmployeeResponse>{
         const validated = Validation.validate<EmployeeRequest>(employeeSchema,data);
         return await prisma.$transaction(async (tx) => {
-            const user = await UserService.create(validated);
+            const user = await UserService.create({
+                username: validated.username,
+                email: validated.email,
+                roleId: validated.roleId
+            });
             if (!user || !user.id) {
                 throw new ResponseError( 500,"User creation failed");
             }

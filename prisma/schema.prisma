@@ -113,7 +113,7 @@ model Employee {
 model EmployeeWorkSchedule {
   id           Int                @id @default(autoincrement())
   employeeId   Int
-  scheduleDate DateTime // Tanggal jadwal kerja
+  scheduleDate DateTime           @db.Date // Tanggal jadwal kerja
   workType     WorkType // Enum: SHIFT CHANGE, WFO
   status       WorkScheduleStatus
   createdAt    DateTime           @default(now())
@@ -162,16 +162,16 @@ model SalaryHistory {
 }
 
 model Attendance {
-  id           Int              @id @default(autoincrement())
-  employeeId   Int
-  employee     Employee         @relation(fields: [employeeId], references: [id])
-  date         DateTime         @db.Date
-  checkIn      DateTime         @db.Timestamp()
-  checkOut     DateTime?        @db.Timestamp()
-  status       AttendanceStatus @default(PRESENT)
-  createdAt    DateTime         @default(now())
-  updatedAt    DateTime         @updatedAt
-  geolocations Geolocation[]
+  id          Int              @id @default(autoincrement())
+  employeeId  Int
+  employee    Employee         @relation(fields: [employeeId], references: [id])
+  date        DateTime         @db.Date
+  checkIn     DateTime         @db.Timestamp()
+  checkOut    DateTime?        @db.Timestamp()
+  status      AttendanceStatus @default(PRESENT)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  geolocation Geolocation? // Wajib punya 1 Geolocation
 
   @@map("attendances")
 }
@@ -211,8 +211,8 @@ model Geolocation {
   checkInLongitude  Decimal    @db.Decimal(11, 8)
   checkOutLatitude  Decimal?   @db.Decimal(18, 8)
   checkOutLongitude Decimal?   @db.Decimal(11, 8)
-  attendance_id     Int
-  attendance        Attendance @relation(fields: [attendance_id], references: [id])
+  attendanceId      Int        @unique // Foreign Key ke Attendance.id (One-to-One)
+  attendance        Attendance @relation(fields: [attendanceId], references: [id], onDelete: Cascade)
 
   @@map("geolocations")
 }

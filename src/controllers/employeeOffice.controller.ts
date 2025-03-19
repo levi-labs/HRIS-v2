@@ -34,7 +34,7 @@ export class EmployeeOfficeController {
     static async store (req: Request, res: Response, next: NextFunction) {
         try {
             const data = await EmployeeOfficeService.create(req.body);
-            res.status(200).json({
+            res.status(201).json({
                 success: true,
                 message: "Employee office created successfully",
                 data: data,

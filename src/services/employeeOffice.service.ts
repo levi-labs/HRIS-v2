@@ -39,7 +39,6 @@ export class EmployeeOfficeService {
             data :{
                 employeeId: validate.employeeId,
                 officeId: validate.officeId,
-                startDate: new Date(validate.startDate),
                 endDate: validate.endDate ? new Date(validate.endDate) : null
             }
         });
@@ -66,7 +65,6 @@ export class EmployeeOfficeService {
             data: {
                 employeeId: validate.employeeId,
                 officeId: validate.officeId,
-                startDate: new Date(validate.startDate),
                 endDate: validate.endDate ? new Date(validate.endDate) : null
             }
         });
