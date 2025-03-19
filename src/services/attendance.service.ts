@@ -1,4 +1,4 @@
-import { Attendance } from "@prisma/client";
+import { Attendance, AttendanceStatus, WorkScheduleStatus, WorkType } from "@prisma/client";
 import prisma from "../config/prisma.js";
 import { AttendanceRequest } from "../types/attendance.type.js";
 import { attendanceSchema } from "../validations/attendance.validation.js";
@@ -8,7 +8,7 @@ import { haversineFormula } from "../utils/haversine.js";
 import {Decimal} from "decimal.js";
 import { GeolocationService } from "./geolocation.service.js";
 import e from "express";
-import { getDayName } from "../utils/getDays.js";
+import { getDayName, getTimeNow } from "../utils/getDays.js";
 
 export class AttendanceService {
     static async getAll():Promise<Attendance[]> {
@@ -63,8 +63,8 @@ export class AttendanceService {
                 where: {
                     employeeId: validate.employeeId,
                     scheduleDate: new Date(),
-                    workType: "WFH",
-                    status: "APPROVED"
+                    workType:WorkType.WFH,
+                    status: WorkScheduleStatus.APPROVED
                 }
             });
 
@@ -113,13 +113,10 @@ export class AttendanceService {
             if (!officeSchedule) {
                 throw new ResponseError(500,"Failed to find office schedule");
             }
+            const currentTimeUTC= new Date();
 
-            const checkInTimeUTC = new Date();
-            const checkInTimeWIB = new Date(checkInTimeUTC.getTime() + 7 * 60 * 60 * 1000); //konversi UTC ke WIB
-            const workStartInUTC = new Date(officeSchedule.work_start);
-            const workStartInWIB = new Date(workStartInUTC.getTime() + 7 * 60 * 60 * 1000); //konversi UTC ke WIB
-
-            const status_late = checkInTimeWIB > new Date(workStartInWIB.getTime() + officeSchedule.late_tolerance * 60000)
+            const status_late = getTimeNow(officeSchedule.work_start,officeSchedule.late_tolerance)
+            
             console.log("officeLatitude",officeSchedule);
             
             console.log("status late",status_late);
@@ -128,9 +125,9 @@ export class AttendanceService {
             const attendance = await tx.attendance.create({
                 data: {
                     employeeId: validate.employeeId,
-                    date: new Date(),
-                    checkIn: new Date(),
-                    status : status_late ? "LATE" : "PRESENT"
+                    date:currentTimeUTC,
+                    checkIn: currentTimeUTC,
+                    status : status_late ? AttendanceStatus.LATE : AttendanceStatus.PRESENT
                 },
                
             });
@@ -142,9 +139,11 @@ export class AttendanceService {
                 longitude: longitude.toString()
               
             });
-
+            console.log("workInWIB",status_late.nowWIB);
+            
             return {
                 ...attendance,
+                checkIn: status_late.nowWIB.toISOString().split("T")[1].split(".")[0],
                 date:attendance.date.toISOString().split("T")[0],
                 latitude: latitude.toString(),
                 longitude: longitude.toString()
