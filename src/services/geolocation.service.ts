@@ -4,6 +4,7 @@ import { GeolocationCheckInResponse, GeolocationRequest } from "../types/geoloca
 import { geolocationSchema } from "../validations/geolocation.validation.js";
 import { Validation } from "../validations/validation.js";
 import {Decimal} from "decimal.js";
+import { ResponseError } from "../error/response.errors.js";
 
 export class GeolocationService {
     static async checkIn(tx:Prisma.TransactionClient,req:GeolocationRequest):Promise<void>{
@@ -16,5 +17,34 @@ export class GeolocationService {
             },
         });
 
+    }
+
+    static async checkOut(tx:Prisma.TransactionClient,req:GeolocationRequest):Promise<GeolocationCheckInResponse>{
+        const validated = Validation.validate<GeolocationRequest>(geolocationSchema,req);
+        const geolocationIsExists = await tx.geolocation.findFirst({
+            where: {
+                attendanceId: validated.attendanceId
+            }
+        });
+
+        if (!geolocationIsExists) {
+            throw new ResponseError(404,"Geolocation not found");
+        }
+        
+        const result = await tx.geolocation.update({
+            where: {
+                id: geolocationIsExists.id
+            },
+            data: {
+                checkOutLatitude: validated.latitude,
+                checkOutLongitude: validated.longitude
+            }
+        });
+
+        return {
+            ...result,
+            checkInLatitude: result.checkInLatitude.toString(), 
+            checkInLongitude: result.checkInLongitude.toString()
+        };
     }
 }

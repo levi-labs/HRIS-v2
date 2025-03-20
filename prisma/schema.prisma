@@ -286,6 +286,8 @@ enum TransferRequestStatus {
 }
 
 enum AttendanceStatus {
+  EARLY
+  OVERTIME
   PRESENT
   LATE
   ABSENT

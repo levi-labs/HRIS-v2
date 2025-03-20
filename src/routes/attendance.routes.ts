@@ -4,6 +4,7 @@ import { AuthMiddleware } from "../middlewares/auth.middleware.js";
 const router = Router();
 
 
-router.post("/",AuthMiddleware.checkAuth,AttendanceController.store);
+router.post("/check-in",AuthMiddleware.checkAuth,AttendanceController.checkIn);
+router.post("/check-out",AuthMiddleware.checkAuth,AttendanceController.checkOut);
 
 export default router;
