@@ -1,8 +1,8 @@
 import { LeaveRequest, LeaveType } from "@prisma/client";
 import prisma from "../config/prisma.js";
-import { LeaveRequestRequest } from "../types/leaveRequest.type.js";
+import { LeaveRequestFromEmployee, LeaveRequestFromHRD } from "../types/leaveRequest.type.js";
 import { Validation } from "../validations/validation.js";
-import { leaveRequestSchema } from "../validations/leaveRequest.validation.js";
+import { leaveRequestEmployeeSchema, leaveRequestHrdSchema } from "../validations/leaveRequest.validation.js";
 import { start } from "repl";
 import { ResponseError } from "../error/response.errors.js";
 
@@ -23,22 +23,29 @@ export class leaveRequestService{
         }
         return result;
     }
-    static async createFromEmployee(req:LeaveRequestRequest):Promise<LeaveRequest> {
-        const validate = Validation.validate<LeaveRequestRequest>(leaveRequestSchema,req);
+    static async createFromEmployee(req:LeaveRequestFromEmployee):Promise<LeaveRequest> {
+        const validate = Validation.validate<Omit<LeaveRequestFromEmployee, "user">>(leaveRequestEmployeeSchema.omit({user: true}),req);
         const checkAuth = await prisma.user.findUnique({
             where: {
-                id: req.user!.id
+                id: req.user.id
+            },
+            select: {
+                employees: {
+                    select: {
+                        id: true
+                    }
+                },
+
             }
         });
 
-        if (!checkAuth) {
+        if (!checkAuth || !checkAuth.employees) {
             throw new ResponseError(401,"User not found or has been deleted");
         }
 
-
         const checkExistRequest = await prisma.leaveRequest.findFirst({
             where:{
-                employeeId: validate.employeeId,
+                employeeId: checkAuth.employees.id,
                 startDate: new Date(validate.startDate),
                 endDate: new Date(validate.endDate)
             }
@@ -50,20 +57,31 @@ export class leaveRequestService{
 
         const result = await prisma.leaveRequest.create({
             data:{
-                employeeId: validate.employeeId,
+                employeeId: checkAuth.employees.id,
                 startDate: new Date(validate.startDate),
                 endDate: new Date(validate.endDate),
                 reason: validate.reason,
                 leaveType: validate.leaveType,
-                status: validate.status    
             }
         });
 
         return result
     }
 
-    static async createFromHRD(data:LeaveRequestRequest):Promise<LeaveRequest> {
-        const validate = Validation.validate<LeaveRequestRequest>(leaveRequestSchema,data);
+    static async createFromHRD(data:LeaveRequestFromHRD):Promise<LeaveRequest> {
+        const validate = Validation.validate<LeaveRequestFromHRD>(leaveRequestHrdSchema,data);
+        const checkExistRequest = await prisma.leaveRequest.findFirst({
+            where: {
+                employeeId: validate.employeeId,
+                startDate: new Date(validate.startDate),
+                endDate: new Date(validate.endDate)
+            }
+        });
+
+        if (checkExistRequest) {
+            throw new ResponseError(409,"Data for leave request already exists");
+        }
+
         const result = await prisma.leaveRequest.create({
             data: {
                 employeeId: validate.employeeId,
@@ -77,7 +95,7 @@ export class leaveRequestService{
         return result;
     }
 
-    static  async update(id:number,data:LeaveRequestRequest):Promise<LeaveRequest> {
+    static  async update(id:number,data:LeaveRequestFromEmployee):Promise<LeaveRequest> {
         const checkExistRequest = await prisma.leaveRequest.findFirst({
             where: {
                 id
@@ -87,18 +105,16 @@ export class leaveRequestService{
         if (!checkExistRequest) {
             throw new ResponseError(404,"Data for leave request not found");
         }
-        const validate = Validation.validate<LeaveRequestRequest>(leaveRequestSchema,data);
+        const validate = Validation.validate<Omit<LeaveRequestFromEmployee, "user">>(leaveRequestEmployeeSchema.omit({user: true}),data);
         const result = await prisma.leaveRequest.update({
             where: {
                 id    
             },
             data: {
-                employeeId: validate.employeeId,
                 startDate: new Date(validate.startDate),
                 endDate: new Date(validate.endDate),
                 reason: validate.reason,
                 leaveType: validate.leaveType,
-                status: validate.status
             }    
         });
         return result;
@@ -113,6 +129,11 @@ export class leaveRequestService{
         if (!checkExistRequest) {
             throw new ResponseError(404,"Data for leave request not found");
         }
+        
+        if (checkExistRequest.status !== "PENDING") {
+            throw new ResponseError(409,"Leave request cannot be deleted because it is not pending"); 
+        }
+        
         const result = await prisma.leaveRequest.delete({
             where: {
                 id
