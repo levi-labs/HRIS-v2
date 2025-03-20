@@ -219,14 +219,14 @@ model Geolocation {
 
 model LeaveRequest {
   id         Int         @id @default(autoincrement())
-  employeeId Int
+  employeeId Int         @map("employee_id")
   employee   Employee    @relation(fields: [employeeId], references: [id])
-  startDate  DateTime    @db.Date
-  endDate    DateTime    @db.Date
-  leaveType  LeaveType
+  startDate  DateTime    @map("start_date") @db.Date
+  endDate    DateTime    @map("end_date") @db.Date
+  leaveType  LeaveType   @map("leave_type")
   reason     String      @db.VarChar(120)
   status     LeaveStatus @default(PENDING)
-  approvedBy Int?
+  approvedBy Int?        @map("approved_by")
   approver   User?       @relation(fields: [approvedBy], references: [id])
 
   @@map("leave_requests")
@@ -234,25 +234,25 @@ model LeaveRequest {
 
 model TransferRequest {
   id          Int                   @id @default(autoincrement())
-  employeeId  Int
-  fromOffice  Int
-  toOffice    Int
+  employeeId  Int                   @map("employee_id")
+  fromOffice  Int                   @map("from_office")
+  toOffice    Int                   @map("to_office")
   status      TransferRequestStatus // Pending, Approved, Rejected
-  requestDate DateTime              @default(now())
-  approvedBy  Int? // HR/Admin yang menyetujui
+  requestDate DateTime              @default(now()) @map("request_date")
+  approvedBy  Int?                  @map("approved_by") // HR/Admin yang menyetujui
   employee    Employee              @relation(fields: [employeeId], references: [id])
   approver    User?                 @relation(fields: [approvedBy], references: [id])
 }
 
 model Payroll {
   id         Int           @id @default(autoincrement())
-  employeeId Int
+  employeeId Int           @map("emploee_id")
   employee   Employee      @relation(fields: [employeeId], references: [id])
   salary     Decimal       @db.Decimal(18, 2)
   bonus      Decimal       @db.Decimal(18, 2)
   deduction  Decimal       @db.Decimal(18, 2)
-  netSalary  Decimal       @db.Decimal(18, 2)
-  payDate    DateTime      @db.Date
+  netSalary  Decimal       @map("net_salary") @db.Decimal(18, 2)
+  payDate    DateTime      @map("pay_date") @db.Date
   status     PayrollStatus @default(PENDING)
 
   @@map("payrolls")
@@ -260,11 +260,11 @@ model Payroll {
 
 model Document {
   id         Int      @id @default(autoincrement())
-  employeeId Int
+  employeeId Int      @map("employee_id")
   employee   Employee @relation(fields: [employeeId], references: [id])
   title      String   @db.VarChar(120)
-  filePath   String   @db.Text
-  uploadedAt DateTime @default(now())
+  filePath   String   @map("file_path") @db.Text
+  uploadedAt DateTime @default(now()) @map("uploaded_at")
 
   @@map("documents")
 }
