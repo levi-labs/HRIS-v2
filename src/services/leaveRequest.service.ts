@@ -19,7 +19,7 @@ export class leaveRequestService{
             }
         });
         if(!result){
-            throw new Error("Leave Request not found");
+            throw new ResponseError(404,"Leave Request not found");
         }
         return result;
     }
@@ -133,7 +133,7 @@ export class leaveRequestService{
         if (checkExistRequest.status !== "PENDING") {
             throw new ResponseError(409,"Leave request cannot be deleted because it is not pending"); 
         }
-        
+
         const result = await prisma.leaveRequest.delete({
             where: {
                 id
