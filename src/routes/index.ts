@@ -10,6 +10,7 @@ import employeeRouter from "./employee.routes.js";
 import employeeScheduleRouter from "./employeeSchedule.routes.js";
 import employeeOfficeRouter from "./employeeOffice.routes.js";
 import attendanceRouter from "./attendance.routes.js";
+import transferRequestRouter from "./transferRequest.routes.js";
 
 const router = Router();
 
@@ -24,6 +25,7 @@ router.use("/employee",employeeRouter);
 router.use("/employee-schedule",employeeScheduleRouter);
 router.use("/employee-office",employeeOfficeRouter);
 router.use("/attendance",attendanceRouter);
+router.use("/transfer-request",transferRequestRouter);
 
 
 export default router;
