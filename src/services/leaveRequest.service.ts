@@ -1,4 +1,4 @@
-import { LeaveRequest, LeaveType } from "@prisma/client";
+import { LeaveRequest, LeaveStatus, LeaveType } from "@prisma/client";
 import prisma from "../config/prisma.js";
 import { LeaveRequestFromEmployee, LeaveRequestFromHRD } from "../types/leaveRequest.type.js";
 import { Validation } from "../validations/validation.js";
@@ -130,7 +130,7 @@ export class leaveRequestService{
             throw new ResponseError(404,"Data for leave request not found");
         }
         
-        if (checkExistRequest.status !== "PENDING") {
+        if (checkExistRequest.status !== LeaveStatus.PENDING) {
             throw new ResponseError(409,"Leave request cannot be deleted because it is not pending"); 
         }
 
