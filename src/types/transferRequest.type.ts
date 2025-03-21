@@ -5,6 +5,15 @@ export type TransferRequestForEmployee = {
    fromOffice : number
    toOffice : number
    status: TransferRequestStatus
+   
+}
+
+export type TransferRequestForHrd = {
+    employeeId : number
+    fromOffice : number 
+    toOffice : number
+    status: TransferRequestStatus
+    approvedBy: User['id']
 }
 
 export type TransferRequestResponse = {
