@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { ResponseError } from "../error/response.errors.js";
 import { ZodError } from "zod";
 import jwt from "jsonwebtoken";
+import multer from "multer";
 export const errorMiddleware = async (err:Error,req:Request,res:Response,next:NextFunction) => {
     if(err instanceof ZodError){
         const errorsMessage = err.errors.map((error) => {
@@ -35,11 +36,27 @@ export const errorMiddleware = async (err:Error,req:Request,res:Response,next:Ne
             success: false,
             message: "Token is not active yet"
         });
+    }else if(err instanceof multer.MulterError){
+        let message = "File upload error";
+
+        //file format allowed just pdf
+
+        if (err.code === "LIMIT_FILE_SIZE") {
+            message = "File size is too large (Max: 5MB)";
+            return res.status(413).json({ success: false, message });
+          }
+      
+          if (err.code === "LIMIT_UNEXPECTED_FILE") {
+            message = "Unexpected file field";
+            return res.status(400).json({ success: false, message });
+          }
+      
+           return res.status(400).json({ success: false, message });
     }else{
         res.status(500).json({
             success: false,
             message: err.message
         });
     }
-    next();
+   
 }
