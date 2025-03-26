@@ -11,7 +11,7 @@ import employeeScheduleRouter from "./employeeSchedule.routes.js";
 import employeeOfficeRouter from "./employeeOffice.routes.js";
 import attendanceRouter from "./attendance.routes.js";
 import transferRequestRouter from "./transferRequest.routes.js";
-
+import documentRouter from "./document.routes.js";
 const router = Router();
 
 router.use("/auth",authRouter);
@@ -26,6 +26,7 @@ router.use("/employee-schedule",employeeScheduleRouter);
 router.use("/employee-office",employeeOfficeRouter);
 router.use("/attendance",attendanceRouter);
 router.use("/transfer-request",transferRequestRouter);
+router.use("/document",documentRouter);
 
 
 export default router;

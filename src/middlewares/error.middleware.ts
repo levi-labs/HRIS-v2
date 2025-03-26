@@ -43,15 +43,15 @@ export const errorMiddleware = async (err:Error,req:Request,res:Response,next:Ne
 
         if (err.code === "LIMIT_FILE_SIZE") {
             message = "File size is too large (Max: 5MB)";
-            return res.status(413).json({ success: false, message });
+            res.status(413).json({ success: false, message });
           }
       
           if (err.code === "LIMIT_UNEXPECTED_FILE") {
             message = "Unexpected file field";
-            return res.status(400).json({ success: false, message });
+             res.status(400).json({ success: false, message });
           }
       
-           return res.status(400).json({ success: false, message });
+            res.status(400).json({ success: false, message });
     }else{
         res.status(500).json({
             success: false,

@@ -8,6 +8,7 @@ import fs from "fs";
 export class DocumentService{
     static async getAll():Promise<DocumentRequest[]> {
         const result = await prisma.document.findMany();
+        
         return result;
     }
     static async getById(id:number):Promise<DocumentRequest> {
@@ -22,10 +23,15 @@ export class DocumentService{
         return result;
     }
     static async create(data:DocumentRequest):Promise<DocumentRequest>{
-       const validate = Validation.validate<DocumentRequest>(documentSchema,data);
+       console.info("req body",data);
+       const validate = Validation.validate<DocumentRequest>(documentSchema,{
+        ...data, 
+        employeeId:+data.employeeId
+       });
+
        const result = await prisma.document.create({
            data: {
-               employeeId: validate.employeeId,
+               employeeId:validate.employeeId,
                title: validate.title,
                filePath: validate.filePath
            }
@@ -34,25 +40,26 @@ export class DocumentService{
     }
 
     static async update (id:number,data:DocumentRequest):Promise<DocumentRequest> {
+        console.info("req body",data);
         const checkExistDocument = await prisma.document.findFirst({
             where: {
                 id
             }
-        });
+        }); 
+
+        console.log("checkExistDocument",checkExistDocument);
 
         if (!checkExistDocument) {
             throw new ResponseError(404,"Data for document not found");
         }
 
-
-        const validate = Validation.validate<DocumentRequest>(documentSchema,data);
-
         if(fs.existsSync(checkExistDocument.filePath)){
             fs.unlinkSync(checkExistDocument.filePath);
         }
 
-      
-       return await prisma.document.update({
+        const validate = Validation.validate<DocumentRequest>(documentSchema,data);
+
+        return await prisma.document.update({
             where: {
                 id
             },
@@ -78,11 +85,13 @@ export class DocumentService{
         if (fs.existsSync(checkExistDocument.filePath)) {
             fs.unlinkSync(checkExistDocument.filePath);
         }
+
         return await prisma.document.delete({
             where: {
                 id
             }
         });
     }
+
 
 }

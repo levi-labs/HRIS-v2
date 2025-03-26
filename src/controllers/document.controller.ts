@@ -29,7 +29,8 @@ export class DocumentController {
     }
     static async store(req: Request, res: Response, next: NextFunction) {
         try {
-            const data = await DocumentService.create(req.body);
+           
+            const data = await DocumentService.create({...req.body,filePath: req.file!.path});
             res.status(201).json({
                 success: true,
                 message: "Document created successfully",
@@ -43,7 +44,14 @@ export class DocumentController {
 
     static async update(req: Request, res: Response, next: NextFunction) {
         try {
-            const data = await DocumentService.update(+req.params.id, req.body);
+            const body = {
+                employeeId: +req.body.employeeId,
+                title : req.body.title,
+                filePath: req.file!.path
+            }
+            console.log("body-update",body);
+            const data = await DocumentService.update(+req.params.id, body);
+
             res.status(200).json({
                 success: true,
                 message: "Document updated successfully",

@@ -1,6 +1,7 @@
 import fs from "fs";
 import multer from "multer";
 import { ResponseError } from "../error/response.errors.js";
+import path from "path";
 
 const uploadDirectory = 'uploads/documents';
 if (!fs.existsSync(uploadDirectory)) {
@@ -12,7 +13,7 @@ if (!fs.existsSync(uploadDirectory)) {
     },
     filename: function (req, file, cb) {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, file.fieldname + '-' + uniqueSuffix);
+        cb(null, file.fieldname + '-' + uniqueSuffix +path.extname(file.originalname));
     }
  });
 

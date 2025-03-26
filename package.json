@@ -4,14 +4,20 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+   "test": "jest",
     "dev": "tsx watch ./src/main.ts",
     "start": "node dist/main.ts",
     "build": "tsc"
   },
   "jest": {
+    "preset": "ts-jest/presets/default-esm",
+    "testEnvironment": "node",
+    "extensionsToTreatAsEsm": [".ts"],
     "transform": {
-      "^.+\\.[t|j]sx?$": "babel-jest"
+      "^.+\\.(ts|tsx|js|jsx)$": ["babel-jest", { "rootMode": "upward", "filename": "file.ts" }]
+    },
+    "moduleNameMapper": {
+    "^(\\.{1,2}/.*)\\.js$": "$1"
     }
   },
   "keywords": [],
@@ -31,9 +37,12 @@
     "@types/supertest": "^6.0.2",
     "babel-jest": "^29.7.0",
     "jest": "^29.7.0",
+    "jest-esm-transformer": "^1.0.0",
+    "jest-mock-extended": "^4.0.0-beta1",
     "nodemon": "^3.1.9",
     "prisma": "^6.5.0",
     "supertest": "^7.0.0",
+    "ts-jest": "^29.3.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.2"
   },
