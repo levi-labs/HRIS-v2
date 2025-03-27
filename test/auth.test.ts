@@ -32,3 +32,17 @@ describe('POST /auth/register', () => {
         expect(response.status).toBe(409);
       });
 })
+
+describe('POST /auth/login', () => {
+    it('should login a user', async () => {
+      const response = await request(app)
+      .post('/api/auth/login')
+      .send({
+        username: 'test1',
+        password: 'password'
+      });  
+
+     
+      expect(response.status).toBe(200);
+    });
+});
