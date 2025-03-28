@@ -42,7 +42,7 @@ describe('POST /auth/login', () => {
         password: 'password'
       });  
 
-     
+      
       expect(response.status).toBe(200);
     });
 });
