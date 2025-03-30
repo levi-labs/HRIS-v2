@@ -3,8 +3,6 @@ import app from '../src/app.ts';
 import prisma from '../src/config/prisma.ts';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { mock } from 'node:test';
-import e from 'express';
 
 jest.mocked(prisma);
 jest.mocked('bcrypt');
@@ -35,7 +33,7 @@ describe('AuthService', () => {
             password: hashedPassword,
             roleId: 1,
         });
-        console.log(response.body);
+
         expect(response.status).toBe(201);
         expect(response.body.data.username).toBe('testuser');
     });
