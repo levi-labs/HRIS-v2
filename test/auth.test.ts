@@ -106,7 +106,7 @@ describe('AuthService', () => {
             id: 1,
             username: 'testuser',
             email: 'testuser@example.com',
-            password: 'password123',
+            password: await bcrypt.hash('password123', 10),
             roleId: 1,
             role: {
                 id: 1,
@@ -115,6 +115,7 @@ describe('AuthService', () => {
         };
         prisma.user.findUnique = jest.fn().mockResolvedValue(user);
         bcrypt.compare = jest.fn().mockResolvedValue(false);
+
         const response = await request(app).post('/api/auth/login').send({
             username: 'testuser',
             password: 'password123abc',
