@@ -122,8 +122,6 @@ describe('Department', () => {
             .delete('/api/department/1')
             .set('Authorization', `Bearer ${token}`);
 
-        console.log('response', response.body);
-
         expect(response.status).toBe(200);
         expect(response.body.message).toBe('Department deleted successfully');
     });

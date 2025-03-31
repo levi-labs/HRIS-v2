@@ -157,7 +157,6 @@ describe('Job Position Service', () => {
             .delete('/api/job-position/1')
             .set('Authorization', `Bearer ${token}`);
 
-        console.log('response', response.body);
         expect(response.status).toBe(200);
         expect(response.body.message).toBe('Job position deleted successfully');
     });
