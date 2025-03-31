@@ -115,12 +115,15 @@ describe('Department', () => {
             name: 'HR',
             phone: '1234567891',
         };
-        prisma.department.findUnique = jest.fn().mockResolvedValue(mockdata);
+        prisma.department.count = jest.fn().mockResolvedValue(1);
         prisma.department.delete = jest.fn().mockResolvedValue(mockdata);
 
         const response = await request(app)
             .delete('/api/department/1')
             .set('Authorization', `Bearer ${token}`);
+
+        console.log('response', response.body);
+
         expect(response.status).toBe(200);
         expect(response.body.message).toBe('Department deleted successfully');
     });

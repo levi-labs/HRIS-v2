@@ -1,4 +1,4 @@
-import { JobLevel } from "@prisma/client";
+import { JobLevel } from '@prisma/client';
 
 export type JobPositionRequest = {
     name: string;
@@ -6,7 +6,7 @@ export type JobPositionRequest = {
     salary_min: number;
     salary_max: number;
     department_id: number;
-}
+};
 
 export type JobPositionResponse = {
     id: number;
@@ -14,5 +14,5 @@ export type JobPositionResponse = {
     level: string;
     salary_min: string;
     salary_max: string;
-    department_id?: string;
-}
+    department_id?: number | null;
+};
