@@ -111,8 +111,6 @@ describe('employee', () => {
                 roleId: 1,
             });
 
-        console.log('res 201', response.body);
-
         expect(response.status).toBe(201);
     });
 
