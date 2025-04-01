@@ -14,7 +14,7 @@ describe('office', () => {
     beforeAll(async () => {
         token = await mockedToken();
     });
-    afterAll(() => {
+    afterEach(() => {
         jest.clearAllMocks();
     });
     it('should return 401 if the user is not authenticated', async () => {
