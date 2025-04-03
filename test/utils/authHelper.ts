@@ -24,3 +24,16 @@ export const mockedToken = () => {
         { expiresIn: '1h' },
     );
 };
+
+export const mockedAsEmployee = () => {
+    return jwt.sign(
+        {
+            id: 2,
+            username: 'johndoe',
+            email: 'd4iJi@example.com',
+            role: { id: 2, name: 'employee' },
+        },
+        'hris123',
+        { expiresIn: '1h' },
+    );
+};

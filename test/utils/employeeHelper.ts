@@ -5,6 +5,6 @@ export const mockedEmployee = () => {
         email: 'lXU5s@example.com',
         username: 'johndoes',
         job_position_id: 1,
-        userId: 1,
+        userId: 2,
     };
 };
