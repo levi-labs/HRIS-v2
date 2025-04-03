@@ -202,7 +202,6 @@ describe('Leave Request', () => {
             .delete('/api/leave-request/1')
             .set('Authorization', `Bearer ${tokenAdmin}`);
 
-        console.log('response', response.body);
         expect(response.status).toBe(409);
         expect(response.body.success).toBe(false);
         expect(response.body.message).toBe(
