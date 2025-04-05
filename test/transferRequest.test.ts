@@ -303,4 +303,47 @@ describe('Transfer Request Service', () => {
             status: 'REJECTED',
         });
     });
+    it('should return 200 delete transfer request successfully', async () => {
+        prisma.transferRequest.findFirst = jest.fn().mockResolvedValue({
+            id: 1,
+            employeeId: 1,
+            fromOfficeId: 1,
+            toOfficeId: 1,
+            approvedBy: 1,
+            status: TransferRequestStatus.PENDING,
+        });
+        prisma.transferRequest.delete = jest.fn().mockResolvedValue({
+            id: 1,
+            employeeId: 1,
+            fromOfficeId: 1,
+            toOfficeId: 1,
+            approvedBy: 1,
+            status: TransferRequestStatus.PENDING,
+        });
+
+        const response = await request(app)
+            .delete('/api/transfer-request/1')
+            .set('Authorization', `Bearer ${token}`)
+            .send();
+        expect(response.status).toBe(200);
+        expect(response.body.message).toBe('Transfer request deleted successfully');
+    });
+    it('should return 409 when transfer request delete failed because it is not pending', async () => {
+        prisma.transferRequest.findFirst = jest.fn().mockResolvedValue({
+            id: 1,
+            employeeId: 1,
+            fromOfficeId: 1,
+            toOfficeId: 1,
+            approvedBy: 1,
+            status: TransferRequestStatus.APPROVED,
+        });
+        const response = await request(app)
+            .delete('/api/transfer-request/1')
+            .set('Authorization', `Bearer ${token}`)
+            .send();
+        expect(response.status).toBe(409);
+        expect(response.body.message).toBe(
+            'Transfer request cannot be deleted because it is not pending',
+        );
+    });
 });
