@@ -169,7 +169,6 @@ export class leaveRequestService {
         return result;
     }
     static async delete(id: number): Promise<LeaveRequest> {
-        console.log('checkExistRequest', id);
         const checkExistRequest = await prisma.leaveRequest.findFirst({
             where: {
                 id,

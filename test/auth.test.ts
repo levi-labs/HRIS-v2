@@ -1,6 +1,6 @@
 import request from 'supertest';
-import app from '../src/app.ts';
-import prisma from '../src/config/prisma.ts';
+import app from '../src/app';
+import prisma from '../src/config/prisma';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 

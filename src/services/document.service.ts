@@ -1,97 +1,90 @@
-import prisma from "../config/prisma.js";
-import { ResponseError } from "../error/response.errors.js";
-import { DocumentRequest } from "../types/document.type.js";
-import { documentSchema } from "../validations/document.validation.js";
-import { Validation } from "../validations/validation.js";
-import fs from "fs";
+import prisma from '../config/prisma.js';
+import { ResponseError } from '../error/response.errors.js';
+import { DocumentRequest } from '../types/document.type.js';
+import { documentSchema } from '../validations/document.validation.js';
+import { Validation } from '../validations/validation.js';
+import fs from 'fs';
 
-export class DocumentService{
-    static async getAll():Promise<DocumentRequest[]> {
+export class DocumentService {
+    static async getAll(): Promise<DocumentRequest[]> {
         const result = await prisma.document.findMany();
-        
+
         return result;
     }
-    static async getById(id:number):Promise<DocumentRequest> {
+    static async getById(id: number): Promise<DocumentRequest> {
         const result = await prisma.document.findUnique({
             where: {
-                id
-            }
+                id,
+            },
         });
-        if(!result){
-            throw new ResponseError(404,"Document not found");
+        if (!result) {
+            throw new ResponseError(404, 'Document not found');
         }
         return result;
     }
-    static async create(data:DocumentRequest):Promise<DocumentRequest>{
-       console.info("req body",data);
-       const validate = Validation.validate<DocumentRequest>(documentSchema,{
-        ...data, 
-        employeeId:+data.employeeId
-       });
+    static async create(data: DocumentRequest): Promise<DocumentRequest> {
+        const validate = Validation.validate<DocumentRequest>(documentSchema, {
+            ...data,
+            employeeId: +data.employeeId,
+        });
 
-       const result = await prisma.document.create({
-           data: {
-               employeeId:validate.employeeId,
-               title: validate.title,
-               filePath: validate.filePath
-           }
-       });
-       return result;
+        const result = await prisma.document.create({
+            data: {
+                employeeId: validate.employeeId,
+                title: validate.title,
+                filePath: validate.filePath,
+            },
+        });
+        return result;
     }
 
-    static async update (id:number,data:DocumentRequest):Promise<DocumentRequest> {
-        console.info("req body",data);
-        const checkExistDocument = await prisma.document.findFirst({
+    static async update(id: number, data: DocumentRequest): Promise<DocumentRequest> {
+        const checkExistDocument = await prisma.document.findUnique({
             where: {
-                id
-            }
-        }); 
-
-        console.log("checkExistDocument",checkExistDocument);
+                id,
+            },
+        });
 
         if (!checkExistDocument) {
-            throw new ResponseError(404,"Data for document not found");
+            throw new ResponseError(404, 'Data for document not found');
         }
 
-        if(fs.existsSync(checkExistDocument.filePath)){
+        if (fs.existsSync(checkExistDocument.filePath)) {
             fs.unlinkSync(checkExistDocument.filePath);
         }
 
-        const validate = Validation.validate<DocumentRequest>(documentSchema,data);
+        const validate = Validation.validate<DocumentRequest>(documentSchema, data);
 
         return await prisma.document.update({
             where: {
-                id
+                id,
             },
             data: {
                 title: validate.title,
-                filePath: validate.filePath
-            }
+                filePath: validate.filePath,
+            },
         });
-
     }
 
-    static async delete(id:number):Promise<DocumentRequest> {
-        const checkExistDocument = await prisma.document.findFirst({
+    static async delete(id: number): Promise<DocumentRequest> {
+        const checkExistDocument = await prisma.document.findUnique({
             where: {
-                id
-            }
+                id,
+            },
         });
 
         if (!checkExistDocument) {
-            throw new ResponseError(404,"Data for document not found");
+            throw new ResponseError(404, 'Data for document not found');
         }
-        
+
         if (fs.existsSync(checkExistDocument.filePath)) {
             fs.unlinkSync(checkExistDocument.filePath);
         }
 
         return await prisma.document.delete({
             where: {
-                id
-            }
+                id,
+            },
         });
     }
-
-
 }
