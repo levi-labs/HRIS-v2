@@ -359,4 +359,6 @@ describe('Attendance Service Test', () => {
         expect(response.status).toBe(400);
         expect(response.body.message).toBe('You are too far from the office');
     });
+    it('should return 200 if check out status WFH is successful', async () => {});
+    it('should return 200 if check out status WFO is successful', async () => {});
 });
