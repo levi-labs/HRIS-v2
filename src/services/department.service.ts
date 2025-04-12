@@ -67,6 +67,7 @@ export class DepartmentService {
         if (!department) {
             throw new ResponseError(404, 'Department not found');
         }
+
         const countDepartment = await prisma.department.count({
             where: {
                 name: validated.name,
@@ -75,15 +76,14 @@ export class DepartmentService {
                 },
             },
         });
+        console.log(countDepartment);
+
         if (countDepartment > 0) {
             throw new ResponseError(409, 'Department already exists with this name');
         }
         const updatedDepartment = await prisma.department.update({
             where: {
                 id,
-                NOT: {
-                    id,
-                },
             },
             data: {
                 name: validated.name || department.name,

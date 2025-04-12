@@ -103,4 +103,17 @@ export class AuthService {
             expiresIn: expiresIn.toString(),
         };
     }
+
+    static async me(token: any): Promise<any> {
+        const currentToken = token;
+        if (!currentToken) {
+            throw new ResponseError(401, 'Unauthorized : Token is missing or invalid');
+        }
+        const user = jwt.verify(
+            currentToken,
+            process.env.ACCESS_TOKEN_SECRET || '',
+        ) as jwt.JwtPayload;
+
+        return user;
+    }
 }
