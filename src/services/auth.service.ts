@@ -1,5 +1,6 @@
 import prisma from '../config/prisma.js';
 import { ResponseError } from '../error/response.errors.js';
+import { AuthRequest } from '../middlewares/auth.middleware.js';
 import {
     UserLoginRequest,
     UserLoginResponse,
@@ -116,4 +117,6 @@ export class AuthService {
 
         return user;
     }
+
+    //delete cookie token
 }

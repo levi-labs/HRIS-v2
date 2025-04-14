@@ -4,15 +4,48 @@ import { ResponseError } from '../error/response.errors.js';
 import { departmentSchema } from '../validations/department.validation.js';
 import { Validation } from '../validations/validation.js';
 export class DepartmentService {
-    static async getAll(): Promise<DepartmentResponse[]> {
-        const departments = await prisma.department.findMany({
-            select: {
-                id: true,
-                name: true,
-                phone: true,
-            },
-        });
-        return departments;
+    static async getAll(queryParams: { page?: string; limit?: string; search?: string }): Promise<{
+        data: DepartmentResponse[];
+        pagination: {
+            total: number;
+            page: number;
+            skip: number;
+            limit: number;
+            totalPages: number;
+        };
+    }> {
+        const page = Number(queryParams.page) || 1;
+        const limit = Number(queryParams.limit) || 10;
+        const skip = (Number(page) - 1) * Number(limit);
+        const search = queryParams.search?.toLowerCase() || '';
+        const whereCondition = search
+            ? {
+                  name: {
+                      contains: search,
+                      mode: 'insensitive',
+                  },
+              }
+            : {};
+
+        const [data, total] = await Promise.all([
+            prisma.department.findMany({
+                where: whereCondition,
+                skip,
+                take: Number(limit),
+                select: {
+                    id: true,
+                    name: true,
+                    phone: true,
+                },
+            }),
+            prisma.department.count({
+                where: whereCondition,
+            }),
+        ]);
+        return {
+            data,
+            pagination: { page, skip, limit, total, totalPages: Math.ceil(total / limit) },
+        };
     }
 
     static async getById(id: number): Promise<DepartmentResponse> {
